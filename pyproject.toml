@@ -1,6 +1,6 @@
 [project]
 name = "kat-transform"
-version = "0.0.1"
+version = "0.0.2"
 description = "Transform python data using declarative schemas"
 readme = "README.md"
 authors = [
@@ -11,6 +11,12 @@ dependencies = [
     "fundi>=1.2.2",
 ]
 license-files = ["LICENSE.md"]
+classifiers = [
+  "Programming Language :: Python :: 3"
+]
+
+[project.urls]
+homepage = "https://github.com/KuyuCode/kat-transform"
 
 [build-system]
 requires = ["hatchling"]
