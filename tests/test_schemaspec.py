@@ -1,9 +1,17 @@
 import typing
-from kat_transform import FieldSpec, field, FieldMetadata, schema, SchemaMetadata, SchemaSpec
 
 import pytest
 
-from kat_transform.markers import FieldValue, ValueGetter
+from kat_transform import (
+    field,
+    schema,
+    FieldSpec,
+    SchemaSpec,
+    FieldValue,
+    ValueGetter,
+    FieldMetadata,
+    SchemaMetadata,
+)
 
 
 @pytest.fixture
@@ -49,22 +57,3 @@ def test_get_with_getter(field_spec_getter):
             ValueGetter(field_spec_getter.getter, {}, field_spec_getter),
         ),
     }
-
-
-def test_transform():
-    spec = schema("Schema", field(str, "field", transform=lambda x: x.lower()))
-
-    raw = spec.get({"field": "UPPERCASE MESSAGE"})
-
-    transformed = spec.transform(raw)
-
-    assert transformed == {"field": "uppercase message"}
-
-
-def test_transform_with_getter(field_spec_getter):
-    spec = schema("Schema", field_spec_getter)
-
-    raw = spec.get({})
-
-    with pytest.raises(AssertionError):
-        spec.transform(raw)

@@ -3,8 +3,8 @@ import collections.abc
 from dataclasses import dataclass
 
 from .field import FieldSpec
+from .markers import FieldValue
 from .metadata import SchemaMetadata
-from .markers import ValueGetter, FieldValue
 
 
 @dataclass(frozen=True)
@@ -34,32 +34,6 @@ class SchemaSpec:
             fields.add(FieldValue(spec, field_value))
 
         return fields
-
-    def transform(
-        self, values: collections.abc.Set[FieldValue]
-    ) -> collections.abc.Mapping[str, typing.Any]:
-        """
-        Transform input values of fields into final values using field's transformers
-        """
-        transformed: dict[str, typing.Any] = {}
-
-        for field_value in values:
-            assert not isinstance(field_value.value, ValueGetter), (
-                "ValueGetter objects are not permitted in transformation. "
-                "They should be resolved using dependency injection"
-            )
-
-            value = field_value.value
-            spec = field_value.field_spec
-
-            if isinstance(spec.output_type, SchemaSpec):
-                value = spec.output_type.transform(value)
-            elif spec.transform is not None:
-                value = spec.transform(field_value.value)
-
-            transformed[spec.name] = value
-
-        return transformed
 
     def __hash__(self) -> int:
         return hash((self.name,) + tuple(self.fields))
