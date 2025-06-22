@@ -1,6 +1,6 @@
 [project]
 name = "kat-transform"
-version = "0.0.2"
+version = "0.0.3"
 description = "Transform python data using declarative schemas"
 readme = "README.md"
 authors = [
