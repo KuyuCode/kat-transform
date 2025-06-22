@@ -46,6 +46,32 @@ def schema(
     return SchemaSpec(name, fields, meta)
 
 
+def transform_value(value: typing.Any, spec: FieldSpec[typing.Any, typing.Any]) -> typing.Any:
+    if spec.transform is not None:
+        value = spec.transform(value)
+
+    if isinstance(spec.output_type, SchemaSpec):
+        return transform(value)
+
+    if not isinstance(spec.item_type, SchemaSpec):
+        return value
+
+    if spec.is_typed_mutable_sequence:
+        sequence = typing.cast(tuple[frozenset[FieldValue]], value)
+        return [transform(subraw) for subraw in sequence]
+
+    elif spec.is_typed_sequence:
+        sequence = typing.cast(tuple[frozenset[FieldValue]], value)
+        return tuple(transform(subraw) for subraw in sequence)
+
+    elif spec.is_typed_mapping:
+        mapping = typing.cast(tuple[tuple[str, frozenset[FieldValue]]], value)
+        return {k: transform(vraw) for k, vraw in mapping}
+
+    else:
+        raise RuntimeError("Unexpected behavior")
+
+
 def transform(raw: collections.abc.Set[FieldValue]) -> collections.abc.Mapping[str, typing.Any]:
     """
     Transform input values of fields into final values using field's transformers
@@ -58,15 +84,8 @@ def transform(raw: collections.abc.Set[FieldValue]) -> collections.abc.Mapping[s
             "They should be resolved using dependency injection"
         )
 
-        value = field_value.value
-        spec = field_value.field_spec
-
-        if isinstance(spec.output_type, SchemaSpec):
-            value = transform(value)
-
-        elif spec.transform is not None:
-            value = spec.transform(field_value.value)
-
-        transformed[spec.name] = value
+        transformed[field_value.field_spec.name] = transform_value(
+            field_value.value, field_value.field_spec
+        )
 
     return transformed
