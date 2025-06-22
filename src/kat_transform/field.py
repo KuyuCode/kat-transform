@@ -1,6 +1,6 @@
-from functools import cache
 import typing
 import collections.abc
+from functools import cache
 from dataclasses import dataclass
 
 
