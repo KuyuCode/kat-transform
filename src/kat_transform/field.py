@@ -1,5 +1,6 @@
 import typing
 import collections.abc
+from functools import cache
 from dataclasses import dataclass
 
 
@@ -37,6 +38,43 @@ class FieldSpec(typing.Generic[I, O]):
     """
     Define metadata for this field
     """
+
+    @property
+    @cache
+    def _origin(self):
+        return typing.get_origin(self.output_type)
+
+    @property
+    @cache
+    def is_typed_mutable_sequence(self):
+        if self._origin is None:
+            return False
+
+        return issubclass(self._origin, collections.abc.MutableSequence)
+
+    @property
+    @cache
+    def is_typed_sequence(self):
+        if self._origin is None:
+            return False
+
+        return issubclass(self._origin, collections.abc.Sequence)
+
+    @property
+    @cache
+    def is_typed_mapping(self):
+        if self._origin is None:
+            return False
+
+        return issubclass(self._origin, collections.abc.Mapping)
+
+    @property
+    @cache
+    def item_type(self):
+        if self.is_typed_sequence:
+            return typing.get_args(self.output_type)[0]
+        elif self.is_typed_mapping:
+            return typing.get_args(self.output_type)[1]
 
     def get(self, from_: typing.Any) -> I | O | ValueGetter:
         """
