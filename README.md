@@ -16,7 +16,7 @@ Features
 from dataclasses import dataclass
 from datetime import datetime
 
-from kat_transform import schema, field
+from kat_transform import schema, field, transform
 
 user_schema = schema(
     "User",
@@ -32,7 +32,7 @@ class User:
 user = User("Kuyugama", -1)
 
 raw = user_schema.get(user)
-transformed = user_schema.transform(raw)
+transformed = transform(raw)
 
 assert transformed == {"username": "Kuyugama", "id": -1}
 
@@ -46,7 +46,7 @@ print(transformed)
 from dataclasses import dataclass
 from datetime import datetime
 
-from kat_transform import schema, field
+from kat_transform import schema, field, transform
 
 user_schema = schema(
     "User",
@@ -64,7 +64,7 @@ class User:
 user = User("Kuyugama", datetime(day=17, month=3, year=2026), -1)
 
 raw = user_schema.get(user)
-transformed = user_schema.transform(raw)
+transformed = transform(raw)
 
 assert transformed == {"username": "kuyugama", "created": 1773612000, "id": -1}
 
@@ -76,7 +76,7 @@ print(transformed)
 from dataclasses import dataclass
 from datetime import datetime
 
-from kat_transform import schema, field, resolve_fields
+from kat_transform import schema, field, resolve_fields, transform
 
 error_schema = schema(
     "Error",
@@ -98,7 +98,7 @@ raw = error_schema.get(error)
 
 resolved = resolve_fields({"response": {"status_code": 404}}, raw)
 
-transformed = error_schema.transform(resolved)
+transformed = transform(resolved)
 
 assert transformed == {"message": "User not found", "category": "users", "code": "not-found", "cat": "https://http.cat/404"}
 
@@ -113,7 +113,7 @@ print(transformed)
 from dataclasses import dataclass
 from datetime import datetime
 
-from kat_transform import schema, field, resolve_fields
+from kat_transform import schema, field, resolve_fields, transform
 
 user_schema = schema(
     "User",
@@ -146,7 +146,7 @@ content = Content(user, "Clever flower")
 
 raw = content_schema.get(content)
 
-transformed = content_schema.transform(raw)
+transformed = transform(raw)
 
 assert transformed == {"owner": {"username": "kuyugama", "id": 1}, "title": "Clever Flower"}
 
