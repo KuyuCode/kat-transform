@@ -23,13 +23,13 @@ def resolve_getter(
                 {**scope, "from_object": getter.from_object}, scan(getter.callable), stack
             )
         except Exception as exc:
-            raise FieldResolveError(getter.field_spec, getter.from_object)
+            raise FieldResolveError(getter.field_spec, getter.from_object) from exc
 
     return value
 
 
 def resolve_fields(
-    scope: collections.abc.Mapping[str, typing.Any], raw: set[FieldValue]
+    scope: collections.abc.Mapping[str, typing.Any], raw: collections.abc.Set[FieldValue]
 ) -> set[FieldValue]:
     """
     Resolve fields that define getters using dependency injection
