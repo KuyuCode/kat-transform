@@ -1,12 +1,11 @@
 import typing
 import collections.abc
-from functools import cache
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 from .util import get_by_name
 from .markers import ValueGetter
-from .metadata import FieldMetadata
+from .metadata import CombinedMetadata, FieldMetadata
 
 if typing.TYPE_CHECKING:
     from .schema import SchemaSpec
@@ -34,7 +33,7 @@ class FieldSpec(typing.Generic[I, O]):
     Define name, list of names or callable that will be used to get input value for this field
     """
 
-    metadata: FieldMetadata | None = None
+    metadata: FieldMetadata | CombinedMetadata[FieldMetadata] | None = None
     """
     Define metadata for this field
     """

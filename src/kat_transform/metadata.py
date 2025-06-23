@@ -1,11 +1,13 @@
 import typing
 
 T = typing.TypeVar("T", bound="Metadata")
+T_co = typing.TypeVar("T_co", bound="Metadata", covariant=True)
 
 
 class Metadata:
-    def __init__(self) -> None:
-        self.entries: tuple[Metadata, ...] = (self,)
+    @property
+    def entries(self: T_co) -> tuple[T_co, ...]:
+        return (self,)
 
     def get_metadata(self, metadata_type: type[T], exact: bool = False) -> T | None:
         for entry in self.entries:
@@ -17,14 +19,17 @@ class Metadata:
 
         return None
 
-    def __or__(self, other: "Metadata") -> "CombinedMetadata":
-        return CombinedMetadata(*self.entries, *other.entries)
+    def __or__(self: T_co, other: T_co) -> "CombinedMetadata[T_co]":
+        return CombinedMetadata[T_co](*self.entries, *other.entries)
 
 
-class CombinedMetadata(Metadata):
-    def __init__(self, *entries: Metadata):
-        super().__init__()
-        self.entries: tuple[Metadata, ...] = entries
+class CombinedMetadata(Metadata, typing.Generic[T_co]):
+    def __init__(self, *entries: T_co):
+        self._entries: tuple[T_co, ...] = entries
+
+    @property
+    def entries(self) -> tuple[T_co, ...]:
+        return self._entries
 
 
 class FieldMetadata(Metadata):

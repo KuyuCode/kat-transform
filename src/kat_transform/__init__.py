@@ -6,9 +6,9 @@ from .schema import SchemaSpec
 from .field import FieldSpec, I, O
 from .exceptions import FieldResolveError
 from .markers import ValueGetter, FieldValue
-from .metadata import SchemaMetadata, FieldMetadata
 from .resolve_fields import resolve_fields, resolve_getter
 from .util import get_item_type, is_typed_mapping, is_typed_sequence
+from .metadata import CombinedMetadata, SchemaMetadata, FieldMetadata
 
 __all__ = [
     "field",
@@ -31,7 +31,7 @@ def field(
     name: str,
     transform: typing.Callable[[I], O] | None = None,
     getter: str | collections.abc.Sequence[str] | typing.Callable[..., I | O] | None = None,
-    meta: FieldMetadata | None = None,
+    meta: FieldMetadata | CombinedMetadata[FieldMetadata] | None = None,
 ) -> FieldSpec[I, O]:
     """
     Shorthand for FieldSpec creation
@@ -40,7 +40,9 @@ def field(
 
 
 def schema(
-    name: str, *fields: FieldSpec[typing.Any, typing.Any], meta: SchemaMetadata | None = None
+    name: str,
+    *fields: FieldSpec[typing.Any, typing.Any],
+    meta: SchemaMetadata | CombinedMetadata[SchemaMetadata] | None = None,
 ) -> SchemaSpec:
     """
     Shorthand for SchemaSpec creation

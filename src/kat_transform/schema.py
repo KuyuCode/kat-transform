@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from .field import FieldSpec
 from .markers import FieldValue
-from .metadata import SchemaMetadata
+from .metadata import CombinedMetadata, SchemaMetadata
 from .util import get_item_type, is_typed_mapping, is_typed_sequence
 
 
@@ -37,7 +37,7 @@ class SchemaSpec:
 
     name: str
     fields: collections.abc.Sequence[FieldSpec[typing.Any, typing.Any]]
-    metadata: SchemaMetadata | None = None
+    metadata: SchemaMetadata | CombinedMetadata[SchemaMetadata] | None = None
 
     def get(self, from_: typing.Any) -> frozenset[FieldValue]:
         """
