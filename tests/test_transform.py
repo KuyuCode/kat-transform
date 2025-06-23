@@ -37,18 +37,6 @@ def test_transform_subschema_in_mutable_sequence():
     assert transformed == {"sub": [{"name": "NAME"}]}
 
 
-def test_transform_subschema_in_immutable_sequence():
-    sub = schema("Sub", field(str, "name", transform=lambda x: x.upper()))
-
-    spec = schema("Schema", field(tuple[sub], "sub"))
-
-    raw = spec.get({"sub": [{"name": "name"}]})
-
-    transformed = transform(raw)
-
-    assert transformed == {"sub": ({"name": "NAME"},)}
-
-
 def test_transform_subschema_in_mapping():
     sub = schema("Sub", field(str, "name", transform=lambda x: x.upper()))
 

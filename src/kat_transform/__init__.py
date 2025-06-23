@@ -1,12 +1,14 @@
 import typing
 import collections.abc
 
+
 from .schema import SchemaSpec
 from .field import FieldSpec, I, O
 from .exceptions import FieldResolveError
 from .markers import ValueGetter, FieldValue
 from .metadata import SchemaMetadata, FieldMetadata
 from .resolve_fields import resolve_fields, resolve_getter
+from .util import get_item_type, is_typed_mapping, is_typed_sequence
 
 __all__ = [
     "field",
@@ -53,20 +55,23 @@ def transform_value(value: typing.Any, spec: FieldSpec[typing.Any, typing.Any]) 
     if isinstance(spec.output_type, SchemaSpec):
         return transform(value)
 
-    if not isinstance(spec.item_type, SchemaSpec):
+    item_type = get_item_type(spec.output_type)
+    if not isinstance(item_type, SchemaSpec):
         return value
 
-    if spec.is_typed_mutable_sequence:
+    if is_typed_sequence(spec.output_type):
+        assert isinstance(
+            value, collections.abc.Sequence
+        ), f"Expected sequence value, but got {type(value)}"
         sequence = typing.cast(tuple[frozenset[FieldValue]], value)
         return [transform(subraw) for subraw in sequence]
 
-    elif spec.is_typed_sequence:
-        sequence = typing.cast(tuple[frozenset[FieldValue]], value)
-        return tuple(transform(subraw) for subraw in sequence)
-
-    elif spec.is_typed_mapping:
-        mapping = typing.cast(tuple[tuple[str, frozenset[FieldValue]]], value)
-        return {k: transform(vraw) for k, vraw in mapping}
+    elif is_typed_mapping(spec.output_type):
+        assert isinstance(
+            value, collections.abc.Mapping
+        ), f"Expected mapping value, but got {type(value)}"
+        mapping = typing.cast(collections.abc.Mapping[str, frozenset[FieldValue]], value)
+        return {k: transform(vraw) for k, vraw in mapping.items()}
 
     else:
         raise RuntimeError("Unexpected behavior")
