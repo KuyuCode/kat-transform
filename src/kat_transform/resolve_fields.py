@@ -29,7 +29,7 @@ def resolve_getter(
 
 
 def resolve_fields(
-    scope: collections.abc.Mapping[str, typing.Any], raw: set[FieldValue]
+    scope: collections.abc.Mapping[str, typing.Any], raw: collections.abc.Set[FieldValue]
 ) -> set[FieldValue]:
     """
     Resolve fields that define getters using dependency injection
