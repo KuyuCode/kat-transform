@@ -2,9 +2,11 @@ import typing
 import collections.abc
 from dataclasses import dataclass
 
+
 from .field import FieldSpec
 from .markers import FieldValue
 from .metadata import SchemaMetadata
+from .util import get_item_type, is_typed_mapping, is_typed_sequence
 
 
 def get_by_item(
@@ -12,18 +14,16 @@ def get_by_item(
     value: collections.abc.Mapping[str, typing.Any] | collections.abc.Sequence[typing.Any],
     spec: FieldSpec[typing.Any, typing.Any],
 ) -> FieldValue:
-    if spec.is_typed_mapping:
+    if is_typed_mapping(spec.output_type):
         mapping = typing.cast(collections.abc.Mapping[str, typing.Any], value)
 
-        mapping_schema_fields = tuple(
-            (key, frozenset(item_type.get(item))) for key, item in mapping.items()
-        )
+        mapping_schema_fields = {key: item_type.get(item) for key, item in mapping.items()}
         return FieldValue(spec, mapping_schema_fields)
 
-    elif spec.is_typed_sequence:
+    elif is_typed_sequence(spec.output_type):
         array = typing.cast(collections.abc.Sequence[typing.Any], value)
 
-        array_schema_fields = [frozenset(item_type.get(item)) for item in array]
+        array_schema_fields = [item_type.get(item) for item in array]
         return FieldValue(spec, array_schema_fields)
     else:
         raise RuntimeError("Unexpected behavior")
@@ -39,7 +39,7 @@ class SchemaSpec:
     fields: collections.abc.Sequence[FieldSpec[typing.Any, typing.Any]]
     metadata: SchemaMetadata | None = None
 
-    def get(self, from_: typing.Any) -> set[FieldValue]:
+    def get(self, from_: typing.Any) -> frozenset[FieldValue]:
         """
         Get input values of fields
         """
@@ -50,16 +50,16 @@ class SchemaSpec:
 
             if isinstance(spec.output_type, SchemaSpec):
                 sub_schema_fields = spec.output_type.get(field_value)
-                fields.add(FieldValue(spec, frozenset(sub_schema_fields)))
+                fields.add(FieldValue(spec, sub_schema_fields))
                 continue
 
-            elif isinstance(spec.item_type, SchemaSpec):
-                fields.add(get_by_item(spec.item_type, typing.cast(typing.Any, field_value), spec))
+            elif isinstance(item_type := get_item_type(spec.output_type), SchemaSpec):
+                fields.add(get_by_item(item_type, typing.cast(typing.Any, field_value), spec))
                 continue
 
             fields.add(FieldValue(spec, field_value))
 
-        return fields
+        return frozenset(fields)
 
     def __hash__(self) -> int:
         return hash((self.name,) + tuple(self.fields))
